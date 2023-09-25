@@ -5,9 +5,13 @@ import numpy as np
 import cache_service_pb2
 import cache_service_pb2_grpc
 from find_car_by_id import find_car_by_id
+import matplotlib.pyplot as plt
+
+avoided_json_lookups: int = 0
+
 
 class CacheClient:
-    def __init__(self, host="master", port=50051):
+    def __init__(self, host="localhost", port=50051):
         self.channel = grpc.insecure_channel(f"{host}:{port}")
         self.stub = cache_service_pb2_grpc.CacheServiceStub(self.channel)
 
@@ -51,12 +55,13 @@ class CacheClient:
                 return None
             
     def simulate_searches(self, n_searches=100):
+        global avoided_json_lookups
         keys_to_search = [f"{i}" for i in np.random.randint(1, 101, n_searches)]
 
         # Métricas
         time_without_cache = 0
         time_with_cache = 0
-        avoided_json_lookups = 0
+        individual_times = []
 
         count = 0
         for key in keys_to_search:
@@ -69,13 +74,21 @@ class CacheClient:
             self.get(key)
             elapsed_time = time.time() - start_time
             time_with_cache += elapsed_time
+            individual_times.append(elapsed_time)
 
             if elapsed_time < 1:
                 avoided_json_lookups += 1
 
         time_saved = time_without_cache - time_with_cache
-        print(f"\nTime saved thanks to cache: {time_saved:.2f} seconds")
+        print(f"Total time with cache: {round(time_with_cache, 2)}s.")
+        print(f"Time saved thanks to cache: {time_saved:.2f} seconds")
+        print(f"Average time with cache: {round(np.average(individual_times), 4)}s.")
         print(f"Number of times JSON lookup was avoided: {avoided_json_lookups}")
+        plt.plot(individual_times)
+        plt.xlabel("Searches (n)")
+        plt.ylabel("Time (s)")
+        plt.title("Tiempo de búsqueda usando Caché Casero")
+        plt.show()
         
 
 if __name__ == '__main__':
