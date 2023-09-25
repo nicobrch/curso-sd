@@ -1,6 +1,7 @@
 import json
 
-def find_car_by_id(target_id, file_path="./cars.json"):
+
+def find_car_by_id(target_id, file_path="../../../cars2.json"):
     with open(file_path, 'r') as f:
         f.seek(0, 2)
         total_size = f.tell()
@@ -33,11 +34,3 @@ def find_car_by_id(target_id, file_path="./cars.json"):
                 high = mid - 1
 
     return None
-
-'''
-result = find_car_by_id(99)
-if result:
-    print(f"Car found: {result}")
-else:
-    print("Car not found")
-'''
