@@ -35,6 +35,7 @@ class CacheClient:
             # Si no está en el caché, buscar en el JSON
             value = find_car_by_id(int(key))
             value = str(value)
+
             if value:
                 print("Key found in JSON. Adding to cache...")
                 
@@ -42,9 +43,6 @@ class CacheClient:
                 self.stub.Put(cache_service_pb2.CacheItem(key=key, value=value))
                 
                 elapsed_time = time.time() - start_time  # Calcula el tiempo transcurrido
-                if simulated:
-                    # add delay to time just sum
-                    elapsed_time += delay
                 print(f"Time taken (JSON + delay): {elapsed_time:.5f} seconds")
                 
                 return value
@@ -56,7 +54,12 @@ class CacheClient:
             
     def simulate_searches(self, n_searches=100):
         global avoided_json_lookups
-        keys_to_search = [f"{i}" for i in np.random.randint(1, 101, n_searches)]
+        keys_to_search = []
+        if n_searches == 100:
+            for i in range(100):
+                keys_to_search.append(f"{i+1}")
+        else:
+            keys_to_search = [f"{i}" for i in np.random.randint(1, 101, n_searches)]
 
         # Métricas
         time_without_cache = 0
@@ -87,7 +90,7 @@ class CacheClient:
         plt.plot(individual_times)
         plt.xlabel("Searches (n)")
         plt.ylabel("Time (s)")
-        plt.title("Tiempo de búsqueda usando Caché Casero")
+        plt.title("Tiempo de búsqueda usando Caché Casero F=1")
         plt.show()
         
 

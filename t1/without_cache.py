@@ -41,7 +41,12 @@ def find_car_by_id(target_id, file_path="./cars2.json"):
 
 
 def simulate_searches(n_search):
-    keys_to_search = [f"{i}" for i in np.random.randint(1, 101, n_search)]
+    keys_to_search = []
+    if n_search == 100:
+        for i in range(100):
+            keys_to_search.append(f"{i+1}")
+    else:
+        keys_to_search = [f"{i}" for i in np.random.randint(1, 101, n_search)]
 
     # Métricas
     time_without_cache = 0
@@ -64,7 +69,7 @@ def simulate_searches(n_search):
     plt.plot(individual_times)
     plt.xlabel("Searches (n)")
     plt.ylabel("Time (s)")
-    plt.title("Tiempo de búsqueda sin usar caché")
+    plt.title("Tiempo de búsqueda sin usar caché F=1")
     plt.show()
 
 
