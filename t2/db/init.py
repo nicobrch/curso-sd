@@ -65,8 +65,40 @@ def get_maestro_by_id(maestro_id):
         return None
 
 
+def get_maestro_by_email(maestro_email):
+    try:
+        maestro = Maestro.get(Maestro.email == maestro_email)
+        return maestro
+    except Maestro.DoesNotExist:
+        return None
+
+
 def get_all_maestros():
     return Maestro.select()
+
+
+def insert_venta(maestro_id, monto):
+    try:
+        Venta.create(maestro_id=maestro_id, monto=monto)
+        return True
+    except Maestro.DoesNotExist:
+        return False
+
+
+def get_ventas_by_maestro_id(maestro_id):
+    return Venta.select().where(Venta.maestro_id == maestro_id)
+
+
+def insert_reposicion(maestro_id, stock):
+    try:
+        Reposicion.create(maestro_id=maestro_id, stock=stock)
+        return True
+    except Maestro.DoesNotExist:
+        return False
+
+
+def get_reposiciones_by_maestro_id(maestro_id):
+    return Reposicion.select().where(Reposicion.maestro_id == maestro_id)
 
 
 # Close the database connection when done
