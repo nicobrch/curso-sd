@@ -1,0 +1,11 @@
+# IDEs
+venv
+.vscode
+.idea
+volumes
+__pycache__
+
+# Environment
+.env
+.env.local
+secrets.toml

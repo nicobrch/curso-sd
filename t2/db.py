@@ -2,11 +2,11 @@ import peewee as pw
 import base64
 from datetime import datetime
 
-# Define the SQLite database connection
-db = pw.SqliteDatabase('mamochi.db')
+# Definir base de datos
+db = pw.SqliteDatabase('./db/mamochi.db')
 
 
-# Define the "maestro" table
+# Tabla maestro
 class Maestro(pw.Model):
     id = pw.PrimaryKeyField()
     nombre = pw.CharField(max_length=50)
@@ -18,7 +18,7 @@ class Maestro(pw.Model):
         database = db
 
 
-# Define the "venta" table
+# Tabla venta
 class Venta(pw.Model):
     id = pw.PrimaryKeyField()
     maestro_id = pw.ForeignKeyField(Maestro, backref='ventas')
@@ -29,7 +29,7 @@ class Venta(pw.Model):
         database = db
 
 
-# Define the "reposicion" table
+# Tabla maestro
 class Reposicion(pw.Model):
     id = pw.PrimaryKeyField()
     maestro_id = pw.ForeignKeyField(Maestro, backref='reposiciones')
@@ -40,7 +40,7 @@ class Reposicion(pw.Model):
         database = db
 
 
-# Create tables in the database if they don't exist
+# Establecer conexión
 db.connect()
 
 
@@ -50,11 +50,13 @@ def create_tables():
 
 def insert_maestro(nombre, email):
     try:
-        secret_key = base64.b64encode(f"{nombre}".encode()).decode()
-        Maestro.create(nombre=nombre, email=email, stock=0, secret_key=secret_key)
-        return True
+        nombre = nombre.lower()
+        email = email.lower()
+        secret_key = base64.b64encode(f"{nombre}_{email}".encode()).decode()
+        maestro = Maestro.create(nombre=nombre, email=email, stock=0, secret_key=secret_key)
+        return maestro
     except pw.IntegrityError:
-        return False
+        return None
 
 
 def get_maestro_by_id(maestro_id):
@@ -79,10 +81,10 @@ def get_all_maestros():
 
 def insert_venta(maestro_id, monto):
     try:
-        Venta.create(maestro_id=maestro_id, monto=monto)
-        return True
+        venta = Venta.create(maestro_id=maestro_id, monto=monto)
+        return venta
     except Maestro.DoesNotExist:
-        return False
+        return None
 
 
 def get_ventas_by_maestro_id(maestro_id):
@@ -91,15 +93,15 @@ def get_ventas_by_maestro_id(maestro_id):
 
 def insert_reposicion(maestro_id, stock):
     try:
-        Reposicion.create(maestro_id=maestro_id, stock=stock)
-        return True
+        reposicion = Reposicion.create(maestro_id=maestro_id, stock=stock)
+        return reposicion
     except Maestro.DoesNotExist:
-        return False
+        return None
 
 
 def get_reposiciones_by_maestro_id(maestro_id):
     return Reposicion.select().where(Reposicion.maestro_id == maestro_id)
 
 
-# Close the database connection when done
+# Cerrar conexión
 db.close()
