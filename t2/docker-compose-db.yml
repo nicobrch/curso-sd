@@ -1,0 +1,38 @@
+###############-VERSION-####################
+version: '3.4'
+##############-SERVICES-####################
+services:
+
+#################-example-app-#####################
+  example-app:
+    build: ./db-app
+    container_name: example-app
+    volumes:
+      - ./db-app:/usr/src/app
+
+###################-POSTGRESQL-##########################
+  db:
+    container_name: db-app
+    image: postgres:16.0-alpine3.18
+    volumes:
+      - ./db/init.sql:/docker-entrypoint-initdb.d/init.sql
+    environment:
+      - POSTGRES_USER=postgres
+      - POSTGRES_DB=proyecto
+      - POSTGRES_PASSWORD=postgres
+      - PGDATA=/var/lib/postgresql/data/some_name/
+    ports:
+      - "5433:5432"
+
+###################-PG_ADMIN-##########################
+  pgadmin:
+    image: "dpage/pgadmin4"
+    environment:
+      PGADMIN_DEFAULT_EMAIL: "admin@admin.com"
+      PGADMIN_DEFAULT_PASSWORD: "admin"
+    ports:
+      - "81:80"
+    depends_on:
+      - db
+    logging:
+      driver: none

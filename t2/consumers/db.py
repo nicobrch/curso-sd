@@ -1,9 +1,15 @@
 import peewee as pw
 import base64
-from datetime import datetime
+from datetime import datetime, timedelta
+from peewee import fn
 
 # Definir base de datos
-db = pw.SqliteDatabase('./db/mamochi.db')
+db = pw.PostgresqlDatabase(
+    database='proyecto',
+    user='postgres',
+    password='postgres',
+    host='db'
+)
 
 
 # Tabla maestro
@@ -44,16 +50,12 @@ class Reposicion(pw.Model):
 db.connect()
 
 
-def create_tables():
-    db.create_tables([Maestro, Venta, Reposicion])
-
-
 def insert_maestro(nombre, email):
     try:
         nombre = nombre.lower()
         email = email.lower()
         secret_key = base64.b64encode(f"{nombre}_{email}".encode()).decode()
-        maestro = Maestro.create(nombre=nombre, email=email, stock=0, secret_key=secret_key)
+        maestro = Maestro.create(nombre=nombre, email=email, stock=10, secret_key=secret_key)
         return maestro
     except pw.IntegrityError:
         return None
@@ -75,8 +77,40 @@ def get_maestro_by_email(maestro_email):
         return None
 
 
+def set_maestro_stock(maestro_id, new_stock):
+    try:
+        maestro = Maestro.get(Maestro.id == maestro_id)
+        maestro.stock = new_stock
+        maestro.save()
+        return maestro
+    except Maestro.DoesNotExist:
+        return None
+
+
+def get_maestro_stock(maestro_id):
+    try:
+        stock = Maestro.select(Maestro.stock).where(Maestro.id == maestro_id)
+        return stock
+    except Maestro.DoesNotExist:
+        return None
+
+
 def get_all_maestros():
     return Maestro.select()
+
+
+def query_maestro_ventas_last_3_days(maestro_id):
+    # Calcular los ultimos 3 dias
+    seven_days_ago = datetime.now() - timedelta(days=3)
+
+    # Query que obtiene el conteo de ventas y la suma de montos
+    query = (Venta
+             .select(fn.COUNT(Venta.id).alias('ventas_count'), fn.SUM(Venta.monto).alias('total_montos'))
+             .where((Venta.maestro_id == maestro_id) & (Venta.fecha >= seven_days_ago)))
+
+    result = query.dicts().get()
+
+    return result if result else {'ventas_count': 0, 'total_montos': 0}
 
 
 def insert_venta(maestro_id, monto):
