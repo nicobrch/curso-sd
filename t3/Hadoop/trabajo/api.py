@@ -44,7 +44,7 @@ def get_api_documents(folder, page_title, number):
         # Eliminar caracteres no pertenecientes al alfabeto inglés
         cleaned_text = re.sub(r'[^a-zA-Z ]', '', page.text)
 
-        text = '{} {}<splittername>{}'.format(number, page.fullurl, json.dumps(cleaned_text))
+        text = '{}<splittername>{}'.format(page.fullurl, json.dumps(cleaned_text))
         filepath = f"./{folder}/documento_{number}.txt"
 
         if os.path.isfile(filepath):

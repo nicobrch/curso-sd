@@ -15,7 +15,7 @@ services:
     restart: always
     volumes:
       - ./Hadoop/trabajo:/home/hduser/trabajo
-      #- ./Hadoop/buscador:/home/hduser/buscador
+      - ./Hadoop/setup.sh:/home/hduser/setup.sh
     ports:
       - "9864:9864"
       - "9870:9870"
