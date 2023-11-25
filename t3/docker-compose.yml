@@ -1,0 +1,26 @@
+version: '3.8'
+
+services:
+  redis:
+    container_name: redis
+    image: redis:alpine
+    ports:
+      - "6379:6379"
+
+  hadoop:
+    container_name: hadoop
+    build:
+      context: ./Hadoop/
+      dockerfile: Dockerfile
+    restart: always
+    volumes:
+      - ./Hadoop/trabajo:/home/hduser/trabajo
+      #- ./Hadoop/buscador:/home/hduser/buscador
+    ports:
+      - "9864:9864"
+      - "9870:9870"
+      - "8088:8088"
+      - "9000:9000"
+      - "8020:8020"
+    depends_on:
+      - redis
