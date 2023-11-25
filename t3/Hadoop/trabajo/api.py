@@ -1,4 +1,5 @@
 import os
+import re
 import json
 import wikipediaapi
 
@@ -37,10 +38,13 @@ paginas = [
 
 
 def get_api_documents(folder, page_title, number):
-    wiki = wikipediaapi.Wikipedia(user_agent='tareatres', language='es', extract_format=wikipediaapi.ExtractFormat.WIKI)
+    wiki = wikipediaapi.Wikipedia(user_agent='tareatres', language='en', extract_format=wikipediaapi.ExtractFormat.WIKI)
     page = wiki.page(page_title)
     if page.exists():
-        text = '{} {}<splittername>{}'.format(number, page.fullurl, json.dumps(page.text))
+        # Eliminar caracteres no pertenecientes al alfabeto inglés
+        cleaned_text = re.sub(r'[^a-zA-Z ]', '', page.text)
+
+        text = '{} {}<splittername>{}'.format(number, page.fullurl, json.dumps(cleaned_text))
         filepath = f"./{folder}/documento_{number}.txt"
 
         if os.path.isfile(filepath):
