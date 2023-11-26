@@ -26,7 +26,7 @@ def process_hadoop_output(file_path):
                     item.replace(",", "")
                     doc_number, page_url, frecuency = item.split(" ")
                     # Insertar
-                    redis_key = f"{word}"
+                    redis_key = f"{word}:{doc_number}"
                     redis_data = {
                         'Palabra': word,
                         'Documento': doc_number,

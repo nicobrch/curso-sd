@@ -18,19 +18,25 @@ def search_word_in_redis(word):
 
         results.append({
             'Documento': int(redis_data[b'Documento']),
-            'Frecuencia': int(redis_data[b'Frequencia']),
+            'Frecuencia': int(redis_data[b'Frecuencia']),
             'url': redis_data[b'URL'].decode('utf-8')
         })
 
-    return results
+    # Sort the results by frequency in descending order
+    sorted_results = sorted(results, key=lambda x: x['Frecuencia'], reverse=True)
+
+    # Retrieve the top 5 results
+    top_5_results = sorted_results[:5]
+
+    return top_5_results
 
 
 def main():
     user_input = input("Buscar Palabra: ")
 
-    search_results = search_word_in_redis(user_input)
+    top_5_results = search_word_in_redis(user_input)
 
-    formatted_results = json.dumps({user_input: search_results}, indent=2, ensure_ascii=False)
+    formatted_results = json.dumps({user_input: top_5_results}, indent=2, ensure_ascii=False)
     print(formatted_results)
 
 
