@@ -1,48 +1,38 @@
-import json
-import os
 import redis
-import re
+import json
 
 
-def insert_data(connection):
-    print("Insertando archivos...")
-    with open('outhadoop/part-00000', 'r') as archivo:
-        next(archivo)
-        for linea in archivo:
-            datos = re.findall(r'\b\w+\b|\([^)]*\)', linea)
+def search_word_in_redis(word):
+    redis_host = 'localhost'
+    redis_port = 6379
+    redis_db = 0
 
-            letra = datos[0]
-            pares = [tuple(map(int, par.strip('()').split(' '))) for par in datos[1:]]
-            for n, m in pares:
-                connection.hsetnx(f"registros:{letra}", n, m)
+    redis_conn = redis.StrictRedis(host=redis_host, port=redis_port, db=redis_db)
 
+    keys = redis_conn.keys(f"{word}:*")
 
-def search_word(connection):
-    os.system('cls' if os.name == 'nt' else 'clear')
-    print("\nGooglent")
-    palabra = input("Buscar: ")
+    results = []
 
-    registros_key = f"registros:{palabra}"
-    resultados = connection.hgetall(registros_key)
+    for key in keys:
+        redis_data = redis_conn.hgetall(key.decode('utf-8'))
 
-    resultados_json = [{"documento": int(doc), "frecuencia": int(freq)} for doc, freq in resultados.items()]
+        results.append({
+            'Documento': int(redis_data[b'Documento']),
+            'Frecuencia': int(redis_data[b'Frequencia']),
+            'url': redis_data[b'URL'].decode('utf-8')
+        })
 
-    print(json.dumps(resultados_json, indent=2))
+    return results
 
 
-redis_conn = redis.StrictRedis(
-    host="redis",
-    port=6379,
-    decode_responses=True
-)
+def main():
+    user_input = input("Buscar Palabra: ")
 
-try:
-    insert_data(redis_conn)
-    search_word(redis_conn)
+    search_results = search_word_in_redis(user_input)
 
-except Exception as error:
-    print("Error:", error)
-finally:
-    if redis_conn:
-        redis_conn.close()
-        print("Redis connection is closed")
+    formatted_results = json.dumps({user_input: search_results}, indent=2, ensure_ascii=False)
+    print(formatted_results)
+
+
+if __name__ == "__main__":
+    main()
